@@ -63,6 +63,17 @@ void PassThrough::closeDevice()
     }
 }
 
+template <class T>
+void dumpHex(const std::vector<T>& v)
+{
+    fprintf(stderr, "MINEDBG: dumpHex with size: %zu\n", v.size());
+    for (auto d: v)
+    {
+        fprintf(stderr, "0x%02x, ", static_cast<uint8_t>(d));
+    }
+    fprintf(stderr, "\nMINEDBG: dumpHex done\n");
+}
+
 std::vector<int32_t> PassThrough::send(std::vector<int32_t> command)
 {
     using namespace phosphor::logging;
@@ -86,6 +97,9 @@ std::vector<int32_t> PassThrough::send(std::vector<int32_t> command)
     // Populate uint8_t version of vector.
     std::transform(command.begin(), command.end(), cmdInBytes.begin(),
                    [](decltype(cmdInBytes)::value_type x) { return x; });
+
+    fprintf(stderr, "MINEDBG: cmdInBytes...\n");
+    dumpHex(cmdInBytes);
 
     ssize_t size = cmdInBytes.size() * sizeof(decltype(cmdInBytes)::value_type);
     auto rc = write(fd, cmdInBytes.data(), size);
@@ -129,6 +143,8 @@ std::vector<int32_t> PassThrough::send(std::vector<int32_t> command)
                     CALLOUT_DEVICE_PATH(devicePath.c_str()));
         }
     }
+    fprintf(stderr, "MINEDBG: respone...\n");
+    dumpHex(response);
 
     closeDevice();
 
